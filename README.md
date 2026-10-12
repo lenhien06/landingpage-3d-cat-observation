@@ -27,7 +27,8 @@ npm run preview
 - Khi mô hình tải xong, bảng ghi ý hiện ở bên phải trên máy tính hoặc phía dưới trên điện thoại. Nút **Ghi ý / Ẩn ghi ý** dùng để mở hoặc đóng bảng.
 - Kéo để xoay quanh mèo 360°. Cuộn chuột, chụm hai ngón tay hoặc dùng nút `+` và `−` để xem gần/xa; camera tự dừng trước tường, trần và vật dụng có thể che mèo. Nút **Về góc nhìn ban đầu** đưa camera về vị trí ban đầu.
 - Bấm trực tiếp vào mắt, tai, chân, đuôi trên bề mặt mèo hoặc các nút trong bảng để xem câu hỏi tương ứng. Bấm thân mèo để quan sát toàn thể.
-- Ghi từng ý, bấm **Lưu ý**, rồi dùng **Tạo dàn ý**. Có thể sửa, xóa ý và chỉnh nội dung dàn ý.
+- Ghi ý cho đủ bốn bộ phận **Mắt, Tai, Chân, Đuôi**. Bảng tiến độ cho biết bộ phận còn thiếu; khi đủ ý, nút **Tạo dàn ý** xuất hiện để sắp xếp thành **Mở bài, Thân bài, Kết bài**. Có thể bấm **Lưu ý** cho từng ý hoặc để bản nháp: khi tạo dàn ý, tất cả nội dung đang nhập sẽ được lưu và đưa vào dàn ý. Các nhóm Giới thiệu, Toàn thể và Cảm nghĩ có thể bổ sung thêm.
+- Có thể sửa, xóa ý, chỉnh nội dung dàn ý và mở lại bằng **Xem dàn ý**. Dùng **Tạo lại dàn ý** để cập nhật khi sổ ý hoặc bản nháp thay đổi.
 
 Ý đã ghi, bản nháp và dàn ý được lưu trong `localStorage` của cùng trình duyệt. Nút **Làm bài mới** yêu cầu xác nhận trước khi xóa.
 

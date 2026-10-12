@@ -1,24 +1,35 @@
-import { groups } from "../data/questions";
-import type { Note } from "./storage";
+import { groups, partIds } from "../data/questions";
+import type { Note, Work } from "./storage";
 
 export const notesSignature = (notes: Note[]) => JSON.stringify(notes);
+
+export const missingObservationParts = (
+  notes: Note[],
+  drafts: Work["drafts"],
+) =>
+  partIds.filter(
+    (part) =>
+      !drafts[part].trim() &&
+      !notes.some((note) => note.groupId === part && note.text.trim()),
+  );
 
 export function createOutline(notes: Note[]): {
   text: string;
   missing: string[];
 } {
+  const writtenNotes = notes.filter((note) => note.text.trim());
   const byGroup = (id: Note["groupId"]) =>
-    notes
+    writtenNotes
       .filter((note) => note.groupId === id)
-      .map((note) => `  • ${note.text}`);
+      .map((note) => `  • ${note.text.trim()}`);
   const missing = groups
-    .filter((group) => !notes.some((note) => note.groupId === group.id))
+    .filter((group) => !writtenNotes.some((note) => note.groupId === group.id))
     .map((group) => group.shortLabel);
   const body = groups
     .filter(
       (group) =>
         ["overall", "eyes", "ears", "legs", "tail"].includes(group.id) &&
-        notes.some((note) => note.groupId === group.id),
+        writtenNotes.some((note) => note.groupId === group.id),
     )
     .flatMap((group) => [`  ${group.shortLabel}`, ...byGroup(group.id)]);
   return {
