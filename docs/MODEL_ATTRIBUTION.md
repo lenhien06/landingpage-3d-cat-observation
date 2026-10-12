@@ -9,5 +9,5 @@
 - Download mirror: https://github.com/code4fukui/vr-cats/blob/main/bicolor_cat.glb
 
 The original GLB file is preserved. This application adjusts scale and ground
-placement, uses matte fur material settings, and adds studio lighting and shadows.
+placement, uses matte fur material settings, and adds room lighting and shadows.
 No endorsement by the model authors is implied.

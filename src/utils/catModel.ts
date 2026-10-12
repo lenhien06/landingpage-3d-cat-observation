@@ -32,13 +32,15 @@ export function prepareCatModel(scene: THREE.Object3D, settings: ModelSettings) 
       if (material instanceof THREE.MeshStandardMaterial) {
         material.metalness = 0;
         if (source.name === "cat_diffuse") {
-          // The original game material is quite shiny; fur needs a matte response.
-          material.roughness = 0.92;
-          material.normalScale.set(0.65, 0.65);
-          material.envMapIntensity = 0.35;
+          // Keep the authored fur maps/UVs, but use a soft, nonmetallic response.
+          // The room and fur should receive the same image-based illumination.
+          material.roughness = 0.86;
+          material.normalScale.set(0.42, 0.42);
+          material.envMapIntensity = 1;
         } else {
-          // Retain the cornea's highlights without a mirror-like reflection.
-          material.roughness = Math.max(0.13, material.roughness);
+          // A broad window reflection gives the eyes natural catchlights.
+          material.roughness = Math.max(0.18, material.roughness);
+          material.envMapIntensity = 1;
         }
       }
       materialCopies.set(source, material);

@@ -6,7 +6,6 @@ import { ObservationPanel } from "./components/ObservationPanel";
 import { OutlinePanel } from "./components/OutlinePanel";
 import { PartSelector } from "./components/PartSelector";
 import { groups, isPartId, type GroupId, type PartId } from "./data/questions";
-import { modelConfig } from "./config/model";
 import { createOutline, notesSignature } from "./utils/outline";
 import { clearWork, emptyWork, loadWork, saveWork } from "./utils/storage";
 
@@ -139,15 +138,6 @@ function App() {
           </button>
         </div>
       </header>
-
-      <footer className="model-credit" aria-label="Nguồn mô hình 3D">
-        <span>Mô hình:</span>
-        <a href={modelConfig.attribution.source} target="_blank" rel="noreferrer">{modelConfig.attribution.author}</a>
-        <span> / </span>
-        <a href={modelConfig.attribution.originalSource} target="_blank" rel="noreferrer">{modelConfig.attribution.originalAuthor}</a>
-        <span> · </span>
-        <a href={modelConfig.attribution.licenseUrl} target="_blank" rel="noreferrer">{modelConfig.attribution.license}</a>
-      </footer>
 
       {catReady && panelOpen && (
         <aside className="study-panel" aria-label="Ghi ý quan sát">

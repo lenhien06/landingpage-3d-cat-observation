@@ -156,7 +156,7 @@ function Armchair() {
   const { wood, fabric } = useRoomTextures();
   const upholstery = <meshStandardMaterial {...fabric} color="#8f9a83" roughness={0.94} bumpScale={0.025} />;
   return (
-    <group position={[-4.7, 0, -4.4]} rotation={[0, 0.3, 0]}>
+    <group position={[-5.7, 0, -5.2]} rotation={[0, 0.3, 0]}>
       {[-0.68, 0.68].flatMap((x) => [-0.6, 0.59].map((z) => (
         <mesh key={`${x}-${z}`} castShadow receiveShadow position={[x, 0.34, z]} rotation={[z * 0.06, 0, -x * 0.08]} raycast={noRaycast}>
           <cylinderGeometry args={[0.078, 0.05, 0.68, 12]} />
@@ -182,7 +182,7 @@ function SideTable() {
   const mug = useMemo(() => vessel([[0.105, 0], [0.117, 0.015], [0.123, 0.2], [0.12, 0.222], [0.103, 0.222], [0.104, 0.038], [0, 0.038]]), []);
   useEffect(() => () => mug.dispose(), [mug]);
   return (
-    <group position={[-2.8, 0, -5.1]}>
+    <group position={[-3.3, 0, -5.9]}>
       {[0, 1, 2].map((leg) => (
         <mesh key={leg} castShadow receiveShadow position={[Math.cos(leg * Math.PI * 2 / 3) * 0.34, 0.61, Math.sin(leg * Math.PI * 2 / 3) * 0.34]} raycast={noRaycast}>
           <cylinderGeometry args={[0.043, 0.057, 1.22, 16]} />
@@ -243,7 +243,7 @@ function Plant() {
   const pot = useMemo(() => vessel([[0, 0], [0.32, 0], [0.355, 0.055], [0.405, 0.66], [0.435, 0.71], [0.435, 0.747], [0.402, 0.747], [0.373, 0.71], [0.325, 0.1], [0, 0.1]]), []);
   useEffect(() => () => { pot.dispose(); plant.stems.dispose(); plant.veins.dispose(); plant.leaves.forEach((geometry) => geometry.dispose()); }, [plant, pot]);
   return (
-    <group position={[4, 0, -4.8]}>
+    <group position={[4.8, 0, -5.5]}>
       <mesh geometry={pot} castShadow receiveShadow raycast={noRaycast}>
         <meshStandardMaterial color="#c6b09a" roughness={0.76} />
       </mesh>

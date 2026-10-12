@@ -3,10 +3,75 @@ import { RoundedBox } from "@react-three/drei";
 import { DoubleSide, PlaneGeometry, Shape, ShapeGeometry } from "three";
 import { RoomTexturesProvider, useGardenTexture, useRoomTextures } from "../utils/roomTextures";
 import { RoomProps } from "./RoomProps";
+import { RoomDoor } from "./RoomDoor";
+import { RoomDecor } from "./RoomDecor";
+import { roomConfig } from "../config/room";
 
 const ignoreRaycast = () => {};
+const ceilingHeight = roomConfig.ceilingY;
+const roomWidth = roomConfig.maxX - roomConfig.minX;
+const roomDepth = roomConfig.maxZ - roomConfig.minZ;
+const roomCenterX = (roomConfig.minX + roomConfig.maxX) / 2;
+const roomCenterZ = (roomConfig.minZ + roomConfig.maxZ) / 2;
+const doorLeft = roomConfig.entryDoor.centerX - roomConfig.entryDoor.width / 2;
+const doorRight = roomConfig.entryDoor.centerX + roomConfig.entryDoor.width / 2;
 
-function Wall({ position, size, rotation = [0, 0, 0] }: {
+function Ceiling() {
+  const { plaster } = useRoomTextures();
+  const geometry = useMemo(() => {
+    const geometry = new PlaneGeometry(roomWidth, roomDepth);
+    const points = geometry.getAttribute("position");
+    const uv = geometry.getAttribute("uv");
+    for (let i = 0; i < uv.count; i++) {
+      uv.setXY(i, (points.getX(i) + roomCenterX) / 2.8, (points.getY(i) + roomCenterZ) / 2.8);
+    }
+    return geometry;
+  }, []);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+
+  return (
+    <group name="room-ceiling">
+      <mesh
+        geometry={geometry}
+        position={[roomCenterX, ceilingHeight, roomCenterZ]}
+        rotation={[Math.PI / 2, 0, 0]}
+        castShadow
+        receiveShadow
+        raycast={ignoreRaycast}
+      >
+        <meshStandardMaterial {...plaster} color="#f3efe5" roughness={0.96} normalScale={[0.12, 0.12]} />
+      </mesh>
+      <mesh name="room-roof" position={[roomCenterX, ceilingHeight + 0.12, roomCenterZ]} castShadow receiveShadow raycast={ignoreRaycast}>
+        <boxGeometry args={[roomWidth, 0.2, roomDepth]} />
+        <meshStandardMaterial color="#eee8dc" roughness={0.96} />
+      </mesh>
+      {/* The stepped cornice closes every wall-to-ceiling seam without overlaps. */}
+      {[0, 1].map((step) => {
+        const thickness = step === 0 ? 0.2 : 0.13;
+        const y = ceilingHeight - 0.04 - step * 0.08;
+        return (
+          <group key={step}>
+            {[roomConfig.minZ + thickness / 2, roomConfig.maxZ - thickness / 2].map((z) => (
+              <mesh key={z} position={[roomCenterX, y, z]} castShadow receiveShadow raycast={ignoreRaycast}>
+                <boxGeometry args={[roomWidth, 0.08, thickness]} />
+                <meshStandardMaterial color="#eee8dc" roughness={0.88} />
+              </mesh>
+            ))}
+            {[roomConfig.minX + thickness / 2, roomConfig.maxX - thickness / 2].map((x) => (
+              <mesh key={x} position={[x, y, roomCenterZ]} castShadow receiveShadow raycast={ignoreRaycast}>
+                <boxGeometry args={[thickness, 0.08, roomDepth - thickness * 2]} />
+                <meshStandardMaterial color="#eee8dc" roughness={0.88} />
+              </mesh>
+            ))}
+          </group>
+        );
+      })}
+    </group>
+  );
+}
+
+function Wall({ name, position, size, rotation = [0, 0, 0] }: {
+  name?: string;
   position: [number, number, number];
   size: [number, number];
   rotation?: [number, number, number];
@@ -14,20 +79,22 @@ function Wall({ position, size, rotation = [0, 0, 0] }: {
   const { plaster } = useRoomTextures();
   const [x, y, z] = position;
   const [width, height] = size;
-  const sideWall = rotation[1] !== 0;
+  const yaw = rotation[1];
   const geometry = useMemo(() => {
     const geometry = new PlaneGeometry(width, height);
     const points = geometry.getAttribute("position");
     const uv = geometry.getAttribute("uv");
     for (let i = 0; i < uv.count; i++) {
-      const horizontal = sideWall ? z - points.getX(i) : x + points.getX(i);
+      const horizontal = Math.abs(Math.sin(yaw)) > 0.5
+        ? z - points.getX(i) * Math.sin(yaw)
+        : x + points.getX(i) * Math.cos(yaw);
       uv.setXY(i, horizontal / 2.8, (y + points.getY(i)) / 2.8);
     }
     return geometry;
-  }, [height, sideWall, width, x, y, z]);
+  }, [height, width, x, y, yaw, z]);
   useEffect(() => () => geometry.dispose(), [geometry]);
   return (
-    <mesh geometry={geometry} position={position} rotation={rotation} castShadow receiveShadow raycast={ignoreRaycast}>
+    <mesh name={name} geometry={geometry} position={position} rotation={rotation} castShadow receiveShadow raycast={ignoreRaycast}>
       <meshStandardMaterial {...plaster} color="#e4dfd3" roughness={0.95} normalScale={[0.22, 0.22]} />
     </mesh>
   );
@@ -122,20 +189,37 @@ function RoomContent() {
         <meshStandardMaterial {...floor} color="#d7c5ac" roughness={0.85} normalScale={[0.38, 0.38]} envMapIntensity={0.45} />
       </mesh>
       <Rug />
-      {/* Single-sided walls stay invisible from outside during a full 360° orbit. */}
-      <Wall position={[0, 0.91, -7]} size={[24, 1.82]} />
-      <Wall position={[0, 8.19, -7]} size={[24, 3.62]} />
-      <Wall position={[-8.85, 4.1, -7]} size={[6.3, 4.56]} />
-      <Wall position={[5.65, 4.1, -7]} size={[12.7, 4.56]} />
-      <Wall position={[-8, 5, 1.7]} size={[17.4, 10]} rotation={[0, Math.PI / 2, 0]} />
-      <mesh position={[0, 0.13, -6.98]} receiveShadow raycast={ignoreRaycast}>
-        <boxGeometry args={[24, 0.26, 0.055]} />
-        <meshStandardMaterial color="#ddd4c3" roughness={0.7} />
-      </mesh>
-      <mesh position={[-7.97, 0.13, 1.7]} receiveShadow raycast={ignoreRaycast}>
-        <boxGeometry args={[0.055, 0.26, 17.4]} />
-        <meshStandardMaterial color="#ddd4c3" roughness={0.7} />
-      </mesh>
+      <Ceiling />
+      {/* All four interior-facing walls share the same bounds as the camera. */}
+      <group name="room-wall-back">
+        <Wall position={[roomCenterX, 0.91, roomConfig.minZ]} size={[roomWidth, 1.82]} />
+        <Wall position={[roomCenterX, 8.19, roomConfig.minZ]} size={[roomWidth, 3.62]} />
+        <Wall position={[-6.85, 4.1, roomConfig.minZ]} size={[2.3, 4.56]} />
+        <Wall position={[5.65, 4.1, roomConfig.minZ]} size={[12.7, 4.56]} />
+      </group>
+      <Wall name="room-wall-left" position={[roomConfig.minX, ceilingHeight / 2, roomCenterZ]} size={[roomDepth, ceilingHeight]} rotation={[0, Math.PI / 2, 0]} />
+      <Wall name="room-wall-right" position={[roomConfig.maxX, ceilingHeight / 2, roomCenterZ]} size={[roomDepth, ceilingHeight]} rotation={[0, -Math.PI / 2, 0]} />
+      <group name="room-wall-front">
+        <Wall position={[(roomConfig.minX + doorLeft) / 2, ceilingHeight / 2, roomConfig.maxZ]} size={[doorLeft - roomConfig.minX, ceilingHeight]} rotation={[0, Math.PI, 0]} />
+        <Wall position={[(doorRight + roomConfig.maxX) / 2, ceilingHeight / 2, roomConfig.maxZ]} size={[roomConfig.maxX - doorRight, ceilingHeight]} rotation={[0, Math.PI, 0]} />
+        <Wall position={[roomConfig.entryDoor.centerX, (roomConfig.entryDoor.height + ceilingHeight) / 2, roomConfig.maxZ]} size={[roomConfig.entryDoor.width, ceilingHeight - roomConfig.entryDoor.height]} rotation={[0, Math.PI, 0]} />
+      </group>
+      {[
+        { x: roomCenterX, z: roomConfig.minZ + 0.0275, width: roomWidth },
+        { x: (roomConfig.minX + doorLeft) / 2, z: roomConfig.maxZ - 0.0275, width: doorLeft - roomConfig.minX },
+        { x: (doorRight + roomConfig.maxX) / 2, z: roomConfig.maxZ - 0.0275, width: roomConfig.maxX - doorRight },
+      ].map(({ x, z, width }) => (
+        <mesh key={`${x}-${z}`} position={[x, 0.13 + roomConfig.floorY, z]} receiveShadow raycast={ignoreRaycast}>
+          <boxGeometry args={[width, 0.26, 0.055]} />
+          <meshStandardMaterial color="#ddd4c3" roughness={0.7} />
+        </mesh>
+      ))}
+      {[roomConfig.minX + 0.0275, roomConfig.maxX - 0.0275].map((x) => (
+        <mesh key={x} position={[x, 0.13 + roomConfig.floorY, roomCenterZ]} receiveShadow raycast={ignoreRaycast}>
+          <boxGeometry args={[0.055, 0.26, roomDepth - 0.11]} />
+          <meshStandardMaterial color="#ddd4c3" roughness={0.7} />
+        </mesh>
+      ))}
       <Window />
       <group position={[3.2, 3.6, -6.95]} rotation={[0, 0, -0.035]}>
         <mesh raycast={ignoreRaycast}>
@@ -156,6 +240,8 @@ function RoomContent() {
         </mesh>
       </group>
       <RoomProps />
+      <RoomDoor />
+      <RoomDecor />
     </group>
   );
 }
