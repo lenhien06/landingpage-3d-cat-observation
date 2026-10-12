@@ -1,4 +1,4 @@
-import { Component, Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Canvas } from "@react-three/fiber";
 import { ContactShadows } from "@react-three/drei";
@@ -9,6 +9,8 @@ import { ModelLoader } from "./ModelLoader";
 import { RoomEnvironment } from "./RoomEnvironment";
 import { ObservationLighting } from "./ObservationLighting";
 import { CameraRig, type ViewerControls } from "./CameraRig";
+import { SceneLoading } from "./SceneLoading";
+import { SceneFirstFrame } from "./SceneFirstFrame";
 import type { FocusTarget, ModelBounds } from "./ModelLoader";
 
 type Props = {
@@ -42,7 +44,9 @@ function hasWebGL(): boolean {
 }
 
 export function CatViewer({ selectedPart, onPartSelect, onOverallSelect, onReady, resetSignal, panelOpen = false }: Props) {
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [ready, setReady] = useState(false);
+  const [showLoading, setShowLoading] = useState(true);
   const [focus, setFocus] = useState<FocusTarget | null>(null);
   const [bounds, setBounds] = useState<ModelBounds | null>(null);
   const [error, setError] = useState("");
@@ -50,13 +54,22 @@ export function CatViewer({ selectedPart, onPartSelect, onOverallSelect, onReady
   const pointerDown = useRef<{ x: number; y: number } | null>(null);
   const controls = useRef<ViewerControls | null>(null);
   const onControlsReady = useCallback((value: ViewerControls | null) => { controls.current = value; }, []);
-  const handleReady = useCallback(() => { setReady(true); onReady(); }, [onReady]);
+  const handleAssetsLoaded = useCallback(() => setAssetsLoaded(true), []);
+  const handleSceneReady = useCallback(() => { setReady(true); onReady(); }, [onReady]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timeout = window.setTimeout(() => setShowLoading(false), reducedMotion ? 0 : 280);
+    return () => window.clearTimeout(timeout);
+  }, [ready]);
 
   return (
     <div className={`cat-stage${panelOpen ? " has-notes" : ""}`} aria-label="Quan sát chú mèo 3D">
       {supported && !error ? (
         <ViewerErrorBoundary onError={setError}>
           <Canvas
+            aria-busy={!ready}
             frameloop="demand"
             shadows="soft"
             dpr={[1, 1.7]}
@@ -69,7 +82,7 @@ export function CatViewer({ selectedPart, onPartSelect, onOverallSelect, onReady
             <color attach="background" args={["#e5dfd2"]} />
             <fog attach="fog" args={["#e5dfd2", 20, 58]} />
             <ObservationLighting />
-            {ready && (
+            {assetsLoaded && (
               <ContactShadows frames={Infinity} position={[0, 0.006, 0]} scale={12} far={4.5} blur={2.2} opacity={0.32} color="#4f402e" resolution={512} />
             )}
             <Suspense fallback={null}>
@@ -78,7 +91,7 @@ export function CatViewer({ selectedPart, onPartSelect, onOverallSelect, onReady
                 selectedPart={selectedPart}
                 onPartSelect={onPartSelect}
                 onOverallSelect={onOverallSelect}
-                onReady={handleReady}
+                onReady={handleAssetsLoaded}
                 onFocus={setFocus}
                 onBounds={setBounds}
                 pointerDown={pointerDown}
@@ -89,21 +102,26 @@ export function CatViewer({ selectedPart, onPartSelect, onOverallSelect, onReady
               focus={focus}
               bounds={bounds}
               resetSignal={resetSignal}
-              enabled={ready}
+              enabled={assetsLoaded}
               panelOpen={panelOpen}
               onControlsReady={onControlsReady}
             />
+            <SceneFirstFrame enabled={assetsLoaded && !!bounds} onReady={handleSceneReady} />
           </Canvas>
         </ViewerErrorBoundary>
       ) : (
         <div className="cat-unavailable" role="alert">
-          {error ? `Không thể hiển thị mèo 3D: ${error}` : "Trình duyệt không hỗ trợ WebGL."}
+          <div className="cat-unavailable-card">
+            <h2>{error ? "Chưa tải được chú mèo" : "Trình duyệt chưa hỗ trợ cảnh 3D"}</h2>
+            <p>{error ? "Em hãy thử tải lại để tiếp tục quan sát." : "Hãy thử mở trang bằng một trình duyệt khác."}</p>
+            {error && <button type="button" onClick={() => window.location.reload()}>Thử tải lại</button>}
+          </div>
         </div>
       )}
-      {!ready && supported && !error && (
-        <div className="cat-intro-hint" role="status">Đang tải mô hình mèo…</div>
+      {showLoading && supported && !error && (
+        <SceneLoading leaving={ready} />
       )}
-      {ready && (
+      {ready && !error && (
         <>
           <div className="cat-gesture-hint">Kéo để đổi góc nhìn · Cuộn chuột để phóng to / thu nhỏ</div>
           <div className="cat-zoom-controls" aria-label="Điều khiển phóng to thu nhỏ">

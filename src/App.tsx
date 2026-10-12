@@ -114,7 +114,7 @@ function App() {
   return (
     <div className="immersive-app">
       <CatViewer
-        panelOpen={catReady && panelOpen}
+        panelOpen={panelOpen}
         selectedPart={selectedPart}
         onPartSelect={selectPart}
         onOverallSelect={() => selectGroup("overall")}
@@ -130,10 +130,10 @@ function App() {
               <Menu size={17} /> {panelOpen ? "Ẩn ghi ý" : "Ghi ý"}
             </button>
           )}
-          <button type="button" className="ghost" onClick={resetView}>
+          <button type="button" className="ghost" onClick={resetView} disabled={!catReady}>
             <RotateCcw size={17} /> Về góc nhìn ban đầu
           </button>
-          <button type="button" onClick={() => { if (generate()) setOutlineOpen(true); }}>
+          <button type="button" onClick={() => { if (generate()) setOutlineOpen(true); }} disabled={!catReady}>
             <FileText size={17} /> Tạo dàn ý
           </button>
         </div>

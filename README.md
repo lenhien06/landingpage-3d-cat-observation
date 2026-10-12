@@ -23,6 +23,7 @@ npm run preview
 
 ## Sử dụng
 
+- Trang hiện hiệu ứng chờ ngay từ HTML, tiếp tục trong lúc tải mèo và căn phòng, rồi mờ đi sau khi cảnh 3D đã vẽ khung hình đầu tiên. Các điều khiển chỉ hoạt động khi cảnh sẵn sàng; khi tải lỗi có nút thử lại. Hiệu ứng tôn trọng `prefers-reduced-motion`.
 - Khi mô hình tải xong, bảng ghi ý hiện ở bên phải trên máy tính hoặc phía dưới trên điện thoại. Nút **Ghi ý / Ẩn ghi ý** dùng để mở hoặc đóng bảng.
 - Kéo để xoay quanh mèo 360°. Cuộn chuột, chụm hai ngón tay hoặc dùng nút `+` và `−` để xem gần/xa; camera tự dừng trước tường, trần và vật dụng có thể che mèo. Nút **Về góc nhìn ban đầu** đưa camera về vị trí ban đầu.
 - Bấm trực tiếp vào mắt, tai, chân, đuôi trên bề mặt mèo hoặc các nút trong bảng để xem câu hỏi tương ứng. Bấm thân mèo để quan sát toàn thể.

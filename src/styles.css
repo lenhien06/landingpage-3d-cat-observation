@@ -910,15 +910,28 @@ html, body, #root {
   color: #765032;
   text-align: center;
 }
-.cat-intro-hint {
-  position: absolute;
-  top: 120px;
-  left: 0;
-  right: 0;
-  text-align: center;
+.cat-unavailable-card {
+  max-width: 380px;
+  padding: 28px;
+  border: 1px solid #dcd6c7;
+  border-radius: 18px;
+  background: #fffaf2;
+}
+.cat-unavailable-card h2 {
+  font-size: 21px;
+  margin-bottom: 12px;
+}
+.cat-unavailable-card p {
+  line-height: 1.65;
   color: #80674e;
-  font-size: 14px;
-  pointer-events: none;
+}
+.cat-unavailable-card button {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 9px;
+  color: #fff;
+  background: #65482e;
+  font-weight: 600;
 }
 .cat-gesture-hint {
   position: absolute;
@@ -1159,9 +1172,6 @@ html, body, #root {
     width: 100%;
     max-height: min(38dvh, calc(100dvh - 375px));
     border-radius: 16px 16px 0 0;
-  }
-  .cat-intro-hint {
-    top: 98px;
   }
   .cat-gesture-hint {
     bottom: 9px;
