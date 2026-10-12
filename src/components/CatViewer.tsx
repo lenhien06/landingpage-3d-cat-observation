@@ -6,6 +6,7 @@ import { Minus, Plus } from "lucide-react";
 import { ACESFilmicToneMapping, MathUtils, PerspectiveCamera, Quaternion, Vector3 } from "three";
 import type { PartId } from "../data/questions";
 import { ModelLoader } from "./ModelLoader";
+import { RoomEnvironment } from "./RoomEnvironment";
 import type { FocusTarget, ModelBounds } from "./ModelLoader";
 
 type Controls = { zoomIn: () => void; zoomOut: () => void };
@@ -91,7 +92,7 @@ function CameraRig({
     if (!bounds || !(camera instanceof PerspectiveCamera)) return null;
     const target = bounds.center.clone();
     const direction = new Vector3(1, 0.25, 1.25).normalize();
-    const distance = fitModelDistance(bounds, direction, frame, size.height, camera.fov);
+    const distance = fitModelDistance(bounds, direction, frame, size.height, camera.fov) * 1.12;
     return { target, direction, distance };
   }, [bounds, camera, frame, size.height]);
   const minDistance = Math.max(0.8, (bounds?.radius ?? 2) * 0.42);
@@ -245,45 +246,43 @@ export function CatViewer({ selectedPart, onPartSelect, onOverallSelect, onReady
             shadows="soft"
             dpr={[1, 1.7]}
             camera={{ fov: 42, near: 0.05, far: 100, position: [2.4, 2.4, 6.5] }}
-            gl={{ antialias: true, toneMapping: ACESFilmicToneMapping, toneMappingExposure: 0.93 }}
+            gl={{ antialias: true, toneMapping: ACESFilmicToneMapping, toneMappingExposure: 0.88 }}
             onPointerDownCapture={(event) => {
               pointerDown.current = { x: event.clientX, y: event.clientY };
             }}
           >
-            <color attach="background" args={["#f5f3ef"]} />
-            <ambientLight intensity={0.18} />
-            <hemisphereLight args={["#ffffff", "#c7c1b8", 0.5]} />
+            <color attach="background" args={["#e5dfd2"]} />
+            <fog attach="fog" args={["#e5dfd2", 20, 58]} />
+            <ambientLight intensity={0.22} color="#fff5e5" />
+            <hemisphereLight args={["#dfeaf1", "#b49168", 0.65]} />
             <directionalLight
               castShadow
-              color="#ffffff"
-              position={[-3.5, 6, 5]}
-              intensity={1.6}
+              color="#fff1d6"
+              position={[-3.2, 7, -8]}
+              intensity={3.4}
               shadow-mapSize={[2048, 2048]}
-              shadow-camera-left={-4}
-              shadow-camera-right={4}
-              shadow-camera-top={4}
-              shadow-camera-bottom={-4}
+              shadow-camera-left={-8}
+              shadow-camera-right={8}
+              shadow-camera-top={8}
+              shadow-camera-bottom={-8}
               shadow-camera-near={0.5}
-              shadow-camera-far={20}
+              shadow-camera-far={32}
               shadow-bias={-0.00015}
-              shadow-normalBias={0.012}
+              shadow-normalBias={0.015}
               shadow-radius={3}
             />
-            <directionalLight color="#e8edf5" position={[4, 3, 2]} intensity={0.6} />
-            <directionalLight color="#ffffff" position={[-1, 4, -4]} intensity={1.1} />
-            <Environment resolution={128} environmentIntensity={0.35}>
-              <Lightformer form="rect" color="#ffffff" intensity={1.6} position={[-3, 5, 4]} scale={[4, 5, 1]} target={[0, 1.5, 0]} />
-              <Lightformer form="rect" color="#e8edf5" intensity={0.8} position={[4, 2, 1]} scale={[3, 4, 1]} target={[0, 1.5, 0]} />
-              <Lightformer form="rect" color="#ffffff" intensity={1.2} position={[0, 4, -4]} scale={[3, 3, 1]} target={[0, 1.5, 0]} />
+            <directionalLight color="#e7edf1" position={[3, 4, 6]} intensity={1.15} />
+            <directionalLight color="#ffe5c1" position={[-5, 3, 2]} intensity={0.45} />
+            <Environment resolution={128} environmentIntensity={0.5}>
+              <Lightformer form="rect" color="#fff2d8" intensity={2.8} position={[-3.2, 4.1, -6.8]} scale={[5, 4.6, 1]} target={[0, 0.8, 0]} />
+              <Lightformer form="rect" color="#e7edf3" intensity={1.2} position={[2, 4, 6]} scale={[6, 5, 1]} target={[0, 0.8, 0]} />
+              <Lightformer form="rect" color="#d0b68c" intensity={0.6} position={[-6, 2, 1]} scale={[4, 3, 1]} target={[0, 0.8, 0]} />
             </Environment>
-            <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
-              <planeGeometry args={[200, 200]} />
-              <meshStandardMaterial color="#f5f3ef" roughness={1} metalness={0} />
-            </mesh>
             {ready && (
-              <ContactShadows frames={Infinity} position={[0, 0.009, 0]} scale={7} far={3.2} blur={2.4} opacity={0.24} color="#77716a" resolution={512} />
+              <ContactShadows frames={Infinity} position={[0, 0.006, 0]} scale={12} far={4.5} blur={2.2} opacity={0.32} color="#4f402e" resolution={512} />
             )}
             <Suspense fallback={null}>
+              <RoomEnvironment />
               <ModelLoader
                 selectedPart={selectedPart}
                 onPartSelect={onPartSelect}
