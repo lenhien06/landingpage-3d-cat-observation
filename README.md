@@ -1,13 +1,13 @@
 # Quan sát chú mèo 3D – Tìm ý viết văn
 
-Trang quan sát toàn màn hình cho học sinh lớp 4. Mèo vàng được dựng từ các hình khối Three.js theo đoạn HTML mẫu; học sinh xoay, phóng to, chọn bộ phận, ghi ý và tạo dàn ý. Ứng dụng chạy trong trình duyệt, không cần tài khoản hay máy chủ dữ liệu.
+Trang quan sát toàn màn hình cho học sinh lớp 4, sử dụng mô hình **Bicolor Cat** dựng theo mèo thật với texture lông cam–trắng, mắt, mũi và ria. Học sinh xoay, phóng to, chọn bộ phận, ghi ý và tạo dàn ý. Bài làm được lưu trong trình duyệt, không cần tài khoản hay máy chủ dữ liệu.
 
 ## Chạy trên Windows PowerShell
 
 Yêu cầu Node.js 20.19+ hoặc 22.12+.
 
 ```powershell
-cd E:\Langdingpage
+cd D:\Project\landingpage-3d-cat-observation
 npm install
 npm run dev
 ```
@@ -22,19 +22,29 @@ npm run preview
 
 ## Sử dụng
 
-- Sau khi mèo chạy vào màn hình, bảng ghi ý hiện ở bên phải trên máy tính hoặc ở phía dưới trên điện thoại. Nút **Ghi ý / Ẩn ghi ý** dùng để mở hoặc đóng bảng.
+- Khi mô hình tải xong, bảng ghi ý hiện ở bên phải trên máy tính hoặc phía dưới trên điện thoại. Nút **Ghi ý / Ẩn ghi ý** dùng để mở hoặc đóng bảng.
 - Kéo mèo để xoay 360°. Cuộn chuột hoặc dùng nút `+` và `−` để phóng to, thu nhỏ. Nút **Về góc nhìn ban đầu** đưa camera về vị trí ban đầu.
-- Bấm vào mắt, tai, chân, đuôi trên mèo hoặc các nút trong bảng để xem câu hỏi tương ứng. Bấm vào thân mèo để quay về nhóm quan sát toàn thể.
-- Ghi từng ý, bấm **Lưu ý**, rồi dùng **Tạo dàn ý** ở góc trên. Có thể sửa, xóa ý và chỉnh nội dung dàn ý.
+- Bấm trực tiếp vào mắt, tai, chân, đuôi trên bề mặt mèo hoặc các nút trong bảng để xem câu hỏi tương ứng. Bấm thân mèo để quan sát toàn thể.
+- Ghi từng ý, bấm **Lưu ý**, rồi dùng **Tạo dàn ý**. Có thể sửa, xóa ý và chỉnh nội dung dàn ý.
 
 Ý đã ghi, bản nháp và dàn ý được lưu trong `localStorage` của cùng trình duyệt. Nút **Làm bài mới** yêu cầu xác nhận trước khi xóa.
 
-## Chỉnh mô hình và nội dung
+## Mô hình và hiển thị
 
-- `src/components/ProceduralCat.tsx`: hình học, màu lông, mắt, tai, chân, đuôi và chuyển động chạy vào/đứng yên. Mã này dùng gói `three` đã cài trong dự án, không tải thư viện từ CDN.
-- `src/components/CatViewer.tsx`: scene toàn màn hình, ánh sáng, mặt đất, camera, xoay, zoom và góc nhìn cho từng bộ phận.
-- `src/App.tsx`: bảng ghi ý, lưu bài và hộp dàn ý.
-- `src/data/questions.ts`: nhóm quan sát và câu hỏi tiếng Việt.
-- `src/styles.css`: bố cục toàn màn hình và bảng nổi.
+- `public/models/bicolor-cat.glb`: mô hình ngoài khoảng 2,3 MB với texture và khung xương. Tệp được phục vụ từ dự án, không phụ thuộc CDN khi chạy.
+- `src/config/model.ts`: đường dẫn mô hình, hướng, kích thước và thông tin ghi công.
+- `src/components/ModelLoader.tsx`: tải GLB, bảo toàn khung xương/texture và xử lý chọn bộ phận.
+- `src/utils/catModel.ts`: chuẩn hóa vị trí trên mặt đất, chất liệu lông mờ, vùng bấm và điểm camera. Điểm bấm gắn vào bề mặt có skinning để đi theo chuyển động đầu, chân và đuôi.
+- `src/config/hotspots.json`: tọa độ mắt, tai, bàn chân và đuôi trong hệ tọa độ của mô hình.
+- `src/components/CatViewer.tsx`: ánh sáng studio, bóng mềm, camera và điều khiển xoay/zoom; tự căn theo bảng ghi ý.
+- `src/App.tsx`, `src/data/questions.ts`, `src/styles.css`: bảng ghi ý, nội dung tiếng Việt và giao diện.
 
-File `public/models/cat.glb`, `src/components/ModelLoader.tsx` và cấu hình hotspot là tài nguyên của phiên bản mèo trắng trước đó; trang hiện tại không tải chúng. Chuyển động chân và đuôi hiện áp dụng trên các bộ phận hình khối riêng của mèo mới.
+Mèo phát chuyển động đứng yên (idle) có sẵn trong GLB: đầu quay nhẹ, cơ thể và đuôi chuyển động tự nhiên, các chân vẫn đặt trên mặt đất. Chuyển động tạm dừng khi chọn một bộ phận để quan sát rõ. Khi trình duyệt bật `prefers-reduced-motion`, mèo giữ tư thế tĩnh. Scene dùng cơ chế vẽ theo yêu cầu; khi animation dừng, chỉ vẽ lại khi tải, tương tác hoặc camera chuyển góc.
+
+Mã `ProceduralCat.tsx` và mô hình trắng `cat.glb` được giữ làm tài nguyên cũ; trang hiện tại không tải chúng.
+
+## Nguồn và giấy phép
+
+**Bicolor Cat** của [kenchoo](https://sketchfab.com/3d-models/bicolor-cat-e623a618ca344a8393d7ba4d63ec23cf), phát triển từ **3d modelling my cat: Fripouille** của [guillaume bolis](https://skfb.ly/6TKqH), được sử dụng theo [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+Bản tải từ [kho vr-cats](https://github.com/code4fukui/vr-cats). GLB gốc được giữ nguyên; ứng dụng điều chỉnh kích thước, vị trí, độ nhám chất liệu và ánh sáng. Thông tin ghi công hiện trên trang và trong `public/models/ATTRIBUTION.md`.
