@@ -1,13 +1,13 @@
 # Quan sát chú mèo 3D – Tìm ý viết văn
 
-Trang quan sát toàn màn hình cho học sinh lớp 4. Mèo vàng được dựng từ các hình khối Three.js theo đoạn HTML mẫu; học sinh xoay, phóng to, chọn bộ phận, ghi ý và tạo dàn ý. Ứng dụng chạy trong trình duyệt, không cần tài khoản hay máy chủ dữ liệu.
+Trang quan sát toàn màn hình cho học sinh lớp 4, sử dụng mô hình **Bicolor Cat** dựng theo mèo thật với texture lông cam–trắng, mắt, mũi và ria. Học sinh xoay, phóng to, chọn bộ phận, ghi ý và tạo dàn ý. Bài làm được lưu trong trình duyệt, không cần tài khoản hay máy chủ dữ liệu.
 
 ## Chạy trên Windows PowerShell
 
 Yêu cầu Node.js 20.19+ hoặc 22.12+.
 
 ```powershell
-cd E:\Langdingpage
+cd D:\Project\landingpage-3d-cat-observation
 npm install
 npm run dev
 ```
@@ -16,25 +16,48 @@ Mở địa chỉ Vite in trong terminal, thường là `http://localhost:5173/`
 
 ```powershell
 npm run typecheck
+node scripts/check-observation-camera.mjs
 npm run build
 npm run preview
 ```
 
 ## Sử dụng
 
-- Sau khi mèo chạy vào màn hình, bảng ghi ý hiện ở bên phải trên máy tính hoặc ở phía dưới trên điện thoại. Nút **Ghi ý / Ẩn ghi ý** dùng để mở hoặc đóng bảng.
-- Kéo mèo để xoay 360°. Cuộn chuột hoặc dùng nút `+` và `−` để phóng to, thu nhỏ. Nút **Về góc nhìn ban đầu** đưa camera về vị trí ban đầu.
-- Bấm vào mắt, tai, chân, đuôi trên mèo hoặc các nút trong bảng để xem câu hỏi tương ứng. Bấm vào thân mèo để quay về nhóm quan sát toàn thể.
-- Ghi từng ý, bấm **Lưu ý**, rồi dùng **Tạo dàn ý** ở góc trên. Có thể sửa, xóa ý và chỉnh nội dung dàn ý.
+- Trang hiện hiệu ứng chờ ngay từ HTML, tiếp tục trong lúc tải mèo và căn phòng, rồi mờ đi sau khi cảnh 3D đã vẽ khung hình đầu tiên. Các điều khiển chỉ hoạt động khi cảnh sẵn sàng; khi tải lỗi có nút thử lại. Hiệu ứng tôn trọng `prefers-reduced-motion`.
+- Khi mô hình tải xong, bảng ghi ý hiện ở bên phải trên máy tính hoặc phía dưới trên điện thoại. Nút **Ghi ý / Ẩn ghi ý** dùng để mở hoặc đóng bảng.
+- Kéo để xoay quanh mèo 360°. Cuộn chuột, chụm hai ngón tay hoặc dùng nút `+` và `−` để xem gần/xa; camera tự dừng trước tường, trần và vật dụng có thể che mèo. Nút **Về góc nhìn ban đầu** đưa camera về vị trí ban đầu.
+- Bấm trực tiếp vào mắt, tai, chân, đuôi trên bề mặt mèo hoặc các nút trong bảng để xem câu hỏi tương ứng. Bấm thân mèo để quan sát toàn thể.
+- Ghi ý cho đủ bốn bộ phận **Mắt, Tai, Chân, Đuôi**. Bảng tiến độ cho biết bộ phận còn thiếu; khi đủ ý, nút **Tạo dàn ý** xuất hiện để sắp xếp thành **Mở bài, Thân bài, Kết bài**. Có thể bấm **Lưu ý** cho từng ý hoặc để bản nháp: khi tạo dàn ý, tất cả nội dung đang nhập sẽ được lưu và đưa vào dàn ý. Các nhóm Giới thiệu, Toàn thể và Cảm nghĩ có thể bổ sung thêm.
+- Có thể sửa, xóa ý, chỉnh nội dung dàn ý và mở lại bằng **Xem dàn ý**. Dùng **Tạo lại dàn ý** để cập nhật khi sổ ý hoặc bản nháp thay đổi.
 
 Ý đã ghi, bản nháp và dàn ý được lưu trong `localStorage` của cùng trình duyệt. Nút **Làm bài mới** yêu cầu xác nhận trước khi xóa.
 
-## Chỉnh mô hình và nội dung
+## Mô hình và hiển thị
 
-- `src/components/ProceduralCat.tsx`: hình học, màu lông, mắt, tai, chân, đuôi và chuyển động chạy vào/đứng yên. Mã này dùng gói `three` đã cài trong dự án, không tải thư viện từ CDN.
-- `src/components/CatViewer.tsx`: scene toàn màn hình, ánh sáng, mặt đất, camera, xoay, zoom và góc nhìn cho từng bộ phận.
-- `src/App.tsx`: bảng ghi ý, lưu bài và hộp dàn ý.
-- `src/data/questions.ts`: nhóm quan sát và câu hỏi tiếng Việt.
-- `src/styles.css`: bố cục toàn màn hình và bảng nổi.
+- `public/models/bicolor-cat.glb`: mô hình ngoài khoảng 2,3 MB với texture và khung xương. Tệp được phục vụ từ dự án, không phụ thuộc CDN khi chạy.
+- `src/config/model.ts`: đường dẫn mô hình, hướng và kích thước hiển thị.
+- `src/components/ModelLoader.tsx`: tải GLB, bảo toàn khung xương/texture và xử lý chọn bộ phận.
+- `src/utils/catModel.ts`: chuẩn hóa vị trí trên mặt đất, chất liệu lông mờ, vùng bấm và điểm camera. Điểm bấm gắn vào bề mặt có skinning để đi theo chuyển động đầu, chân và đuôi.
+- `src/config/hotspots.json`: tọa độ mắt, tai, bàn chân và đuôi trong hệ tọa độ của mô hình.
+- `src/components/CatViewer.tsx`: ghép cảnh, bóng mềm và điều khiển quan sát.
+- `src/components/CameraRig.tsx`, `src/utils/observationCamera.ts`: camera xoay quanh mèo, điều chỉnh zoom theo giới hạn phòng/vật cản, chuyển góc cận cảnh và tự căn theo bảng ghi ý trên máy tính/điện thoại.
+- `src/components/ObservationLighting.tsx`: ánh nắng cửa sổ và ánh sáng phản xạ ấm dùng chung cho mèo và căn phòng. Chất liệu lông nhận ánh sáng môi trường đầy đủ và giữ màu cam–trắng tự nhiên.
+- `src/components/RoomEnvironment.tsx`: phòng kín đủ bốn tường, nóc và trần sáng có phào viền quanh phòng, sàn gỗ, thảm dệt, cửa sổ nhìn ra vườn và rèm vải.
+- `src/components/RoomDoor.tsx`: cửa ra vào bằng gỗ có ô tường riêng, khung, tay nắm, ổ khóa, bản lề, ngưỡng cửa và thảm chân cửa.
+- `src/components/RoomDecor.tsx`: bàn trang trí, kệ sách, tranh treo tường, đồng hồ và đồ gốm đặt quanh phòng; chừa khoảng trống để quan sát mèo.
+- `src/config/room.ts`: kích thước phòng và vùng vật cản dùng chung cho dựng cảnh và giới hạn camera.
+- `src/components/RoomProps.tsx`: ghế vải, bàn gỗ, sách, cốc, cây xanh, giỏ mây, bát nước/thức ăn và cuộn len. Vật trang trí không chặn thao tác chọn mèo.
+- `src/utils/roomTextures.ts`, `public/textures/`: chất liệu PBR sàn gỗ/tường và chất liệu dệt dùng chung; tất cả được phục vụ từ dự án, không tải CDN lúc chạy.
+- `src/App.tsx`, `src/data/questions.ts`, `src/styles.css`: bảng ghi ý, nội dung tiếng Việt và giao diện.
 
-File `public/models/cat.glb`, `src/components/ModelLoader.tsx` và cấu hình hotspot là tài nguyên của phiên bản mèo trắng trước đó; trang hiện tại không tải chúng. Chuyển động chân và đuôi hiện áp dụng trên các bộ phận hình khối riêng của mèo mới.
+Mèo phát chuyển động đứng yên (idle) có sẵn trong GLB: đầu quay nhẹ, cơ thể và đuôi chuyển động tự nhiên, các chân vẫn đặt trên mặt đất. Chuyển động tạm dừng khi chọn một bộ phận để quan sát rõ. Khi trình duyệt bật `prefers-reduced-motion`, mèo giữ tư thế tĩnh. Scene dùng cơ chế vẽ theo yêu cầu; khi animation dừng, chỉ vẽ lại khi tải, tương tác hoặc camera chuyển góc.
+
+Mã `ProceduralCat.tsx` và mô hình trắng `cat.glb` được giữ làm tài nguyên cũ; trang hiện tại không tải chúng.
+
+## Nguồn và giấy phép
+
+**Bicolor Cat** của [kenchoo](https://sketchfab.com/3d-models/bicolor-cat-e623a618ca344a8393d7ba4d63ec23cf), phát triển từ **3d modelling my cat: Fripouille** của [guillaume bolis](https://skfb.ly/6TKqH), được sử dụng theo [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+Bản tải từ [kho vr-cats](https://github.com/code4fukui/vr-cats). GLB gốc được giữ nguyên; ứng dụng điều chỉnh kích thước, vị trí, độ nhám chất liệu và ánh sáng. Thông tin nguồn và giấy phép được lưu trong `docs/MODEL_ATTRIBUTION.md`, ngoài thư mục tài nguyên phục vụ trang web.
+
+Chất liệu **Wood Floor** và **White Plaster 02** từ [Poly Haven](https://polyhaven.com), theo CC0. Nguồn và các bản texture dùng trong cảnh được ghi tại `public/textures/ATTRIBUTION.md`. Vải, vân gỗ đồ nội thất, thảm và cảnh vườn mờ được tạo bằng mã nguồn của ứng dụng.

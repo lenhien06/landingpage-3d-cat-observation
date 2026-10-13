@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
 import { Check, ClipboardCopy, FileText, Sparkles } from "lucide-react";
+import { groupLabel, partIds } from "../data/questions";
 import type { Work } from "../utils/storage";
 
 type Props = {
   outline: Work["outline"];
-  noteCount: number;
+  missingParts: string[];
   missing: string[];
   notesChanged: boolean;
   onGenerate: () => void;
@@ -13,12 +14,15 @@ type Props = {
 
 export function OutlinePanel({
   outline,
-  noteCount,
+  missingParts,
   missing,
   notesChanged,
   onGenerate,
   onChange,
 }: Props) {
+  const optionalMissing = missing.filter(
+    (label) => !partIds.some((part) => groupLabel(part) === label),
+  );
   const textarea = useRef<HTMLTextAreaElement>(null);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "manual">(
     "idle",
@@ -49,19 +53,19 @@ export function OutlinePanel({
       <p className="outline-intro">
         Các ý em đã viết sẽ được xếp theo thứ tự mở bài, thân bài và kết bài.
       </p>
-      <button type="button" className="generate-button" onClick={onGenerate}>
+      <button type="button" className="generate-button" onClick={onGenerate} disabled={missingParts.length > 0}>
         <Sparkles size={18} /> {outline ? "Tạo lại dàn ý" : "Tạo dàn ý"}
       </button>
-      {noteCount === 0 && (
+      {missingParts.length > 0 && (
         <p className="inline-message">
-          Hãy ghi ít nhất một ý quan sát trước khi tạo dàn ý.
+          Hãy ghi ý cho các bộ phận còn thiếu trước khi tạo dàn ý: {missingParts.join(", ")}.
         </p>
       )}
       {outline && (
         <>
-          {missing.length > 0 && (
+          {optionalMissing.length > 0 && (
             <p className="inline-message">
-              Có thể bổ sung hoặc bỏ qua: {missing.join(", ")}.
+              Có thể bổ sung hoặc bỏ qua: {optionalMissing.join(", ")}.
             </p>
           )}
           {notesChanged && (

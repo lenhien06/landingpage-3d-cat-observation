@@ -4,10 +4,11 @@ import { CatViewer } from "./components/CatViewer";
 import { NotesPanel } from "./components/NotesPanel";
 import { ObservationPanel } from "./components/ObservationPanel";
 import { OutlinePanel } from "./components/OutlinePanel";
+import { OutlineReadyPanel } from "./components/OutlineReadyPanel";
 import { PartSelector } from "./components/PartSelector";
-import { groups, isPartId, type GroupId, type PartId } from "./data/questions";
-import { createOutline, notesSignature } from "./utils/outline";
-import { clearWork, emptyWork, loadWork, saveWork } from "./utils/storage";
+import { groups, groupLabel, isPartId, type GroupId, type PartId } from "./data/questions";
+import { createOutline, missingObservationParts, notesSignature } from "./utils/outline";
+import { clearWork, emptyDrafts, emptyWork, loadWork, saveWork } from "./utils/storage";
 
 const makeId = () =>
   typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -36,8 +37,11 @@ function App() {
     [work.notes],
   );
   const { missing } = createOutline(work.notes);
+  const missingParts = missingObservationParts(work.notes, work.drafts);
+  const canGenerate = missingParts.length === 0;
+  const hasDrafts = groups.some((group) => work.drafts[group.id].trim());
   const notesChanged =
-    !!work.outline && work.outline.generatedFrom !== notesSignature(work.notes);
+    !!work.outline && (hasDrafts || work.outline.generatedFrom !== notesSignature(work.notes));
 
   useEffect(() => {
     const error = saveWork(work);
@@ -72,8 +76,8 @@ function App() {
     setMessage("Đã lưu ý của em.");
   };
   const generate = () => {
-    if (work.notes.length === 0) {
-      setMessage("Hãy ghi ít nhất một ý trước khi tạo dàn ý.");
+    if (!canGenerate) {
+      setMessage(`Hãy ghi ý cho các bộ phận còn thiếu: ${missingParts.map(groupLabel).join(", ")}.`);
       setPanelOpen(true);
       return false;
     }
@@ -81,13 +85,22 @@ function App() {
       work.outline?.edited &&
       !window.confirm("Dàn ý đã được em chỉnh sửa. Tạo lại sẽ thay thế nội dung hiện tại. Em muốn tiếp tục?")
     ) return false;
-    const result = createOutline(work.notes);
+    const notes = [
+      ...work.notes,
+      ...groups.flatMap((group) => {
+        const text = work.drafts[group.id].trim();
+        return text ? [{ id: makeId(), groupId: group.id, text }] : [];
+      }),
+    ];
+    const result = createOutline(notes);
     setWork((current) => ({
       ...current,
+      notes,
+      drafts: emptyDrafts(),
       outline: {
         text: result.text,
         edited: false,
-        generatedFrom: notesSignature(current.notes),
+        generatedFrom: notesSignature(notes),
       },
     }));
     setMessage(
@@ -114,6 +127,7 @@ function App() {
   return (
     <div className="immersive-app">
       <CatViewer
+        panelOpen={panelOpen}
         selectedPart={selectedPart}
         onPartSelect={selectPart}
         onOverallSelect={() => selectGroup("overall")}
@@ -129,12 +143,16 @@ function App() {
               <Menu size={17} /> {panelOpen ? "Ẩn ghi ý" : "Ghi ý"}
             </button>
           )}
-          <button type="button" className="ghost" onClick={resetView}>
+          <button type="button" className="ghost" onClick={resetView} disabled={!catReady}>
             <RotateCcw size={17} /> Về góc nhìn ban đầu
           </button>
-          <button type="button" onClick={() => { if (generate()) setOutlineOpen(true); }}>
-            <FileText size={17} /> Tạo dàn ý
-          </button>
+          {(canGenerate || work.outline) && (
+            <button type="button" onClick={() => {
+              if (work.outline || generate()) setOutlineOpen(true);
+            }} disabled={!catReady}>
+              <FileText size={17} /> {work.outline ? "Xem dàn ý" : "Tạo dàn ý"}
+            </button>
+          )}
         </div>
       </header>
 
@@ -162,6 +180,11 @@ function App() {
               }))
             }
             onAdd={addNote}
+          />
+          <OutlineReadyPanel
+            missingParts={missingParts}
+            onPartSelect={selectPart}
+            onGenerate={() => { if (generate()) setOutlineOpen(true); }}
           />
           <NotesPanel
             notes={work.notes}
@@ -193,7 +216,7 @@ function App() {
             <button type="button" className="dialog-close" aria-label="Đóng dàn ý" onClick={() => setOutlineOpen(false)}><X size={20} /></button>
             <OutlinePanel
               outline={work.outline}
-              noteCount={work.notes.length}
+              missingParts={missingParts.map(groupLabel)}
               missing={missing}
               notesChanged={notesChanged}
               onGenerate={generate}
